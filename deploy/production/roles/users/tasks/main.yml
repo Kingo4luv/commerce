@@ -1,0 +1,28 @@
+---
+- name: Create Admin User
+  user:
+    name: "{{ user_name }}"
+    password: "{{ user_password }}"
+    groups: sudo
+    append: yes
+    shell: /bin/bash
+
+- name: Admin Authorized Key
+  authorized_key:
+    user: "{{ user_name }}"
+    key: "{{ shared_public_key }}"
+    state: present
+
+- name: Disable Password Authentication
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+
+- name: Disable Root Login
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+  notify:
+    - Restart SSH

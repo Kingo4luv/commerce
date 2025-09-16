@@ -1,0 +1,30 @@
+---
+#- name: Create The SSH Public Key File
+#  copy:
+#    src: ~/.ssh/id_rsa.pub
+#    dest: /root/.ssh/id_rsa.pub
+#    mode: 0644
+
+#- name: Create The SSH Private Key File
+#  copy:
+#    src: ~/.ssh/id_rsa
+#    dest: /root/.ssh/id_rsa
+#    mode: 0600
+
+- name: Clone The git Repository
+  git:
+    repo: git@github.com:Klump-Inc/commerce-ui-v2.git
+    dest: /var/www/{{ domain }}
+    version: "{{ branch }}"
+    accept_hostkey: yes
+    clone: yes
+    update: yes
+
+- name: Install pm2
+  npm: name=pm2 global=yes version='5.2.0'
+
+- name: Startup pm2
+  shell: pm2 startup ubuntu
+
+- name: Save pm2
+  shell: pm2 save

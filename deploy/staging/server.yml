@@ -1,0 +1,9 @@
+---
+- hosts: web
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/all.yml
+  roles:
+    - users
+    - fail2ban

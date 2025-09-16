@@ -1,0 +1,11 @@
+---
+- hosts: web
+  become: true
+  become_user: root
+  max_fail_percentage: 30
+  serial: 1
+  vars_files:
+    - group_vars/all.yml
+  roles:
+    - users
+    - fail2ban

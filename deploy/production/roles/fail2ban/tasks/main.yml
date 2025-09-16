@@ -1,0 +1,22 @@
+---
+- name: Update System
+  apt:
+    update_cache: yes
+
+- name: Upgrade System
+  apt:
+    upgrade: dist
+
+- name: Install Fail2Ban
+  apt:
+    name: fail2ban
+    state: latest
+    update_cache: true
+
+- name: Copy Configuration File
+  copy:
+    src: /etc/fail2ban/jail.conf
+    dest: /etc/fail2ban/jail.local
+    remote_src: True
+    owner: root
+    group: root

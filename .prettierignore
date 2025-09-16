@@ -1,0 +1,30 @@
+# Ignore all files except JavaScript, TypeScript, Vue, and JSON
+*
+!**/*.js
+!**/*.ts
+!**/*.vue
+!**/*.json
+
+# But ignore these specific patterns
+node_modules/
+.output/
+.nuxt/
+dist/
+coverage/
+.nyc_output/
+*.log
+*.lock
+.git/
+.vscode/
+.idea/
+
+# Ignore specific file types you don't want formatted
+*.md
+*.yml
+*.yaml
+*.html
+*.css
+*.scss
+*.sh
+*.bash
+Makefile

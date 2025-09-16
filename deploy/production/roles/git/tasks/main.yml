@@ -1,0 +1,23 @@
+---
+- name: Add Git Repository
+  apt_repository:
+    repo: 'ppa:git-core/ppa'
+    state: present
+
+- name: Install Git
+  apt:
+    name: git
+    state: latest
+    update_cache: true
+
+- name: Configure Git User Name
+  git_config:
+    name: user.name
+    repo: /etc
+    value: '{{ ansible_fqdn }}'
+
+- name: Configure Git User Email
+  git_config:
+    name: user.email
+    repo: /etc
+    value: 'root@{{ ansible_fqdn }}'

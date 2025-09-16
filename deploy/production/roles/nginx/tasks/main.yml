@@ -1,0 +1,19 @@
+---
+- name: Add {{ domain }} Site Config
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/{{ domain }}
+    owner: root
+    group: root
+  tags:
+    - nginx_configuration
+
+- name: Enable {{ domain }} Site Config
+  file:
+    src: /etc/nginx/sites-available/{{ domain }}
+    dest: /etc/nginx/sites-enabled/{{ domain }}
+    state: link
+  notify:
+    - Reload Nginx
+  tags:
+    - nginx_configuration

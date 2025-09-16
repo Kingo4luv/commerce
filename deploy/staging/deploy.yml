@@ -1,0 +1,18 @@
+---
+- hosts: web
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/all.yml
+  roles:
+    - deploy #Only after first deployment has been done.
+  environment:
+    VUE_APP_NODE_ENV: staging
+    VUE_APP_API_URL: "https://staging-api.useklump.com/v1"
+    VUE_APP_CLIENT_SECRET: "{{ app_client_secret }}"
+    VUE_APP_CLIENT_ID: "{{ app_client_id }}"
+    VUE_APP_CLIENT_KEY: "{{ app_client_key }}"
+    VUE_APP_BUGSNAG_KEY: "{{ bugsnag }}"
+    VUE_APP_BROWSER_URL_DOMAIN: "https://staging.klump.it"
+    VUE_GOOGLE_ANALYTICS_ID: "G-VS66VDV8CL"
+    VUE_PAYSTACK_PK: "{{ paystack_primary_key }}"

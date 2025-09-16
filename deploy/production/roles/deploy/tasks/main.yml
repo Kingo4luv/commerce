@@ -1,0 +1,93 @@
+---
+- name: Check if {{ domain }} exist
+  stat:
+    path: /var/www/{{ domain }}/
+  register: directory_exist
+
+- name: Is there any pending commit?
+  shell: |
+    cd /var/www/{{ domain }}/
+    git status --porcelain
+  register: git_status
+  changed_when: false
+  when: directory_exist.stat.exists and directory_exist.stat.isdir
+
+- name: Commit any outstanding files
+  shell: |
+    cd /var/www/{{ domain }}/
+    git add .
+    git commit -am "Auto-commit uncommitted changes by Ansible"
+  when:
+    - directory_exist.stat.exists
+    - directory_exist.stat.isdir
+    - git_status.stdout != ""
+
+- name: Clone The git Repository
+  git:
+    repo: git@github.com:Klump-Inc/commerce-ui-v2.git
+    dest: /var/www/{{ domain }}
+    version: "{{ branch }}"
+    accept_hostkey: yes
+    clone: yes
+    update: yes
+
+- name: Installing dependencies
+  command: sudo npm install
+  args:
+    chdir: /var/www/{{ domain }}/
+  tags:
+  - install_npm
+
+- name: Copy .ENV File
+  template:
+    src: env.j2
+    dest: /var/www/{{ domain }}/.env
+    owner: root
+    group: root
+
+- name: Run build
+  command: npm run build
+  args:
+    chdir: /var/www/{{ domain }}/
+  register: deployment_completed
+
+- name: Move critical files
+  shell: cp -r /var/www/{{ domain }}/_nuxt/client/* /var/www/{{ domain }}/dist/_nuxt/
+  register: copy_content
+
+- name: Start server
+  command: npm run reload
+  args:
+    chdir: /var/www/{{ domain }}/
+  register: deployment_completed
+
+- name: Get current git log
+  command: git log --oneline -1
+  register: git_log
+  args:
+    chdir: /var/www/{{ domain }}/
+
+- name: Send notification message via Slack
+  slack:
+    token: '{{ slack_token }}'
+    msg: '@channel Deployment completed'
+    channel: '{{ channel_name }}'
+    attachments:
+    - text: '{{ git_log.stdout }}'
+      color: '#008000'
+      title: Deployment Details
+      fields:
+        - title: Server Details
+          value: 'IP: {{ inventory_hostname }}'
+          short: True
+        - title: Branch Details
+          value: 'master'
+          short: True
+        - title: URL
+          value: 'https://{{ domain }}'
+          short: True
+        - title: Product
+          value: 'Admin App'
+          short: True
+    icon_url: 'https://cdn.worldvectorlogo.com/logos/ansible.svg'
+  when: deployment_completed is success

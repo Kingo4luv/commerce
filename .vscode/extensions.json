@@ -1,0 +1,29 @@
+{
+  "recommendations": [
+    "vue.volar",
+    "vue.vscode-typescript-vue-plugin",
+    "ms-vscode.vscode-typescript-next",
+
+    // Linting & Formatting
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "stylelint.vscode-stylelint",
+
+    "bradlc.vscode-tailwindcss",
+    "csstools.postcss",
+    "eamodio.gitlens",
+    "github.vscode-github-actions",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    "ms-vscode.vscode-json",
+    "redhat.vscode-yaml",
+    "vitest.explorer",
+    "ms-vscode.vscode-todo-highlight",
+    "usernamehw.errorlens",
+    "gruntfuggly.todo-tree",
+    "streetsidesoftware.code-spell-checker",
+    "pkief.material-icon-theme",
+    "github.github-vscode-theme"
+  ],
+  "unwantedRecommendations": ["octref.vetur", "ms-vscode.vscode-typescript-next"]
+}

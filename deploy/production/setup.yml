@@ -1,0 +1,23 @@
+---
+- hosts: web
+  become: true
+  become_user: root
+  max_fail_percentage: 30
+  serial: 1
+  vars_files:
+    - group_vars/all.yml
+  roles:
+    - nginx
+    - bitbucket
+    - deploy #Only after first deployment has been done.
+  environment:
+    VUE_APP_NODE_ENV: production
+    VUE_APP_API_URL: "https://api.useklump.com/v1"
+    VUE_APP_CLIENT_SECRET: "{{ app_client_secret }}"
+    VUE_APP_CLIENT_ID: "{{ app_client_id }}"
+    VUE_APP_CLIENT_KEY: "{{ app_client_key }}"
+    VUE_APP_BUGSNAG_KEY: "{{ bugsnag }}"
+    VUE_APP_BROWSER_URL_DOMAIN: "https://klump.it"
+    VUE_GOOGLE_ANALYTICS_ID_FOR_STANBIC: "{{ stanbic_google_analytics }}"
+    VUE_APP_PAGA_MERCHANT_ID: "{{ paga_merchant_id }}"
+    VUE_APP_MIX_PANEL_KEY: "{{ mix_panel_key }}"

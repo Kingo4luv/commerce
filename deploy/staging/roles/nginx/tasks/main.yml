@@ -1,0 +1,41 @@
+---
+#- name: Install Nginx
+#  apt:
+#    name: nginx
+#    state: latest
+#    update_cache: true
+#  notify:
+#    - Restart Nginx
+
+#- name: Add H5BP Config
+#  copy:
+#    src: h5bp
+#    dest: /etc/nginx
+#    owner: root
+#    group: root
+
+#- name: Disable Default Config
+#  file:
+#    dest: /etc/nginx/sites-enabled/default
+#    state: absent
+#  notify:
+#    - Reload Nginx
+
+- name: Add {{ domain }} Site Config
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/{{ domain }}
+    owner: root
+    group: root
+  tags:
+    - nginx_configuration
+
+- name: Enable {{ domain }} Site Config
+  file:
+    src: /etc/nginx/sites-available/{{ domain }}
+    dest: /etc/nginx/sites-enabled/{{ domain }}
+    state: link
+  notify:
+    - Reload Nginx
+  tags:
+    - nginx_configuration

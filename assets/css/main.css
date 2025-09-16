@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Colors */
+  --color-black: #171717;
+  --color-primary: #192c69;
+
+  /* Neutral Colors */
+  --color-neutral-50: #fafafa;
+  --color-neutral-75: #f5f5f5;
+  --color-neutral-100: #e5e5e5;
+  --color-neutral-200: #d4d4d4;
+  --color-neutral-300: #b5b5b5;
+  --color-neutral-400: #a1a1aa;
+  --color-neutral-500: #71717a;
+  --color-neutral-600: #52525b;
+  --color-neutral-700: #3f3f46;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+
+  /* Blue Colors */
+  --color-blue: #4c98ff;
+  --color-blue-50: #f2f8ff;
+  --color-blue-100: #d1e5ff;
+  --color-blue-200: #a6ccff;
+  --color-blue-300: #78b1ff;
+  --color-blue-400: #124c99;
+  --color-blue-500: #0d3366;
+
+  /* Deep Blue Colors */
+  --color-deep-blue-50: #f3f6ff;
+  --color-deep-blue-100: #ebf0ff;
+  --color-deep-blue-200: #d6e0ff;
+  --color-deep-blue-300: #9db5ff;
+  --color-deep-blue-400: #192c69;
+  --color-deep-blue-500: #123499;
+  --color-deep-blue-600: #1f3d99;
+
+  /* Red Colors */
+  --color-red: #ce1112;
+  --color-red-50: #fff2f2;
+  --color-red-100: #ffd1d1;
+  --color-red-200: #ffa6a6;
+  --color-red-300: #ff7879;
+  --color-red-400: #ce1112;
+  --color-red-500: #991213;
+  --color-red-600: #660d0e;
+
+  /* Purple Colors */
+  --color-purple: #6356d7;
+  --color-purple-5: #f4f2ff;
+  --color-purple-100: #d6d1ff;
+  --color-purple-200: #afa6ff;
+  --color-purple-300: #8578ff;
+  --color-purple-400: #6356d7;
+  --color-purple-500: #201299;
+  --color-purple-600: #160d66;
+
+  /* Yellow Colors */
+  --color-yellow: #f3a105;
+  --color-yellow-50: #fffbf5;
+  --color-yellow-100: #fff2d9;
+  --color-yellow-200: #ffe5b2;
+  --color-yellow-300: #ffd78a;
+  --color-yellow-400: #f3a105;
+  --color-yellow-500: #9e6d10;
+  --color-yellow-600: #573e0f;
+
+  /* Green Colors */
+  --color-green: #75b836;
+  --color-green-50: #fcfffa;
+  --color-green-100: #f4ffeb;
+  --color-green-200: #e9ffd4;
+  --color-green-300: #ddffbd;
+  --color-green-400: #75b836;
+  --color-green-500: #8ab562;
+  --color-green-600: #678749;
+
+  /* Apricot Colors */
+  --color-apricot: #eb9481;
+  --color-apricot-50: #fff7f5;
+  --color-apricot-100: #ffe6e0;
+  --color-apricot-200: #ffcbbf;
+  --color-apricot-300: #ffb2a1;
+  --color-apricot-400: #eb9481;
+  --color-apricot-500: #bf5b45;
+  --color-apricot-600: #8f4433;
+}

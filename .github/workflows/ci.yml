@@ -1,0 +1,131 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: CI/CD Pipeline
+
+on:
+    push:
+        branches:
+            - '**'
+            - '!release/develop'
+    pull_request:
+        branches:
+            - release/develop
+        types:
+            - closed
+
+# Set default shell to bash
+defaults:
+    run:
+        shell: bash
+
+# This workflow is cancelled if another workflow is running for the same branch
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    linting:
+        name: Linting project files
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Use Node.js 20.19.0
+              uses: actions/setup-node@v4
+              with:
+                node-version: 20.19.0
+                cache: 'npm'
+
+            - name: Installing dependencies
+              run: npm ci
+
+            - name: Run code linting
+              run: npm run lint
+
+    cypress-tests:
+        name: Cypress E2E Tests
+        runs-on: ubuntu-latest
+        environment: staging
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Use Node.js 20.19.0
+              uses: actions/setup-node@v4
+              with:
+                node-version: 20.19.0
+                cache: 'npm'
+
+            - name: Installing dependencies
+              run: npm ci
+
+            - name: Build the application
+              run: npm run build
+
+
+
+            - name: Run Cypress tests
+              uses: cypress-io/github-action@v6
+              with:
+                start: npm run start
+                wait-on: 'http://localhost:3000'
+                browser: chrome
+                record: false
+              env:
+                NODE_ENV: test
+                PORT: 3000
+                HOST: localhost
+                CYPRESS_BASE_URL: http://localhost:3000
+                # Environment variables from GitHub secrets
+                NUXT_PUBLIC_CLIENT_ID: ${{ secrets.NUXT_PUBLIC_CLIENT_ID }}
+                NUXT_PUBLIC_CLIENT_KEY: ${{ secrets.NUXT_PUBLIC_CLIENT_KEY }}
+                NUXT_PUBLIC_CLIENT_SECRET: ${{ secrets.NUXT_PUBLIC_CLIENT_SECRET }}
+                NUXT_PUBLIC_API_URL: https://staging-api.useklump.com/v1
+                NUXT_PUBLIC_BROWSER_URL_DOMAIN: localhost:3000
+                NUXT_PUBLIC_NODE_ENV: test
+
+    deploy:
+        name: Deploy to staging
+        if: github.event.pull_request.merged
+        runs-on: ubuntu-latest
+        environment: staging
+        env:
+            ENVIRONMENT: "staging"
+            USER: "cyberomin"
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Ansible
+              uses: alex-oleshkevich/setup-ansible@v1.0.1
+              with:
+                version: "9.3.0"
+
+            - name: Setup SSH
+              run: |
+                eval `ssh-agent -s`
+                mkdir -p /home/runner/.ssh/
+                touch /home/runner/.ssh/id_rsa
+                echo -e "${{secrets.SSH_PRIVATE_KEY}}" > /home/runner/.ssh/id_rsa
+                chmod 700 /home/runner/.ssh/id_rsa
+                ssh-keyscan -t rsa,dsa,ecdsa,ed25519 ${{secrets.BASTION_HOST}} >> /home/runner/.ssh/known_hosts
+
+            - name: Setup ansible vault password file
+              run: |
+                mkdir -p ~/.ansible
+                touch ~/.ansible/vault_key
+                echo "${{secrets.ANSIBLE_VAULT_SECRET}}" >> ~/.ansible/vault_key
+
+            - name: Deploy Ansible
+              run: |
+                cd deploy/$ENVIRONMENT
+                ansible-playbook deploy.yml --skip-tags "" -u $USER -i inventory.ini --vault-id ~/.ansible/vault_key --extra-vars 'ansible_become_pass="${{secrets.ANSIBLE_VAULT_SECRET}}"' --extra-vars "branch=release/develop"
+
+            - name: Clean secret
+              if: always()
+              run: |
+                rm -rf ~/.ansible/vault_key
+                rm -f /home/runner/.ssh/id_rsa
