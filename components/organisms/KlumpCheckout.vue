@@ -885,10 +885,7 @@ const onClose = (data: any) => {
 
 const onError = (data: any) => {
   // handles on error callback
-  checkoutStore.setNotification({
-    type: 'error',
-    message: 'Payment failed. Please try again.',
-  })
+  // Klump Widget already displays its own errors to the user
 }
 
 const getShippingData = async (productIds: any[], merchantId: string) => {
@@ -903,8 +900,10 @@ const getShippingData = async (productIds: any[], merchantId: string) => {
     })
 
     // Only push valid shipping data to shippingData array
-    if (data && data.data && typeof data.data === 'object') {
-      shippingData.value.push(data.data)
+    // Handle both response structures: {data: {...}} and direct {...}
+    const shippingResponse = data?.data || data
+    if (data && shippingResponse && typeof shippingResponse === 'object' && shippingResponse.cost !== undefined) {
+      shippingData.value.push(shippingResponse)
     }
     return true
   } catch (error: any) {
