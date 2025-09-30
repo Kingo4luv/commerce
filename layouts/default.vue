@@ -40,6 +40,9 @@ import { useCheckoutStore } from '~/stores/checkout'
 const siteStore = useSiteStore()
 const checkoutStore = useCheckoutStore()
 
+// Ensure categories are loaded during SSR for consistent navigation
+await siteStore.fetchCategories()
+
 const navLinks = computed(() =>
   siteStore.getCategories.map((cat: any) => ({
     name: cat.name,

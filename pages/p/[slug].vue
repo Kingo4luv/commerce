@@ -72,113 +72,137 @@ const transformMerchantProduct = (product: any): MerchantProduct => ({
   },
 })
 
-// Initial data fetch using useAsyncData
-const { data: initialData } = await useAsyncData(
-  `product-details-${route.params.slug}`,
-  async () => {
-    const slug = route.params.slug as string
+// Initial data fetch using $fetch directly
+const slug = route.params.slug as string
 
-    try {
-      // Fetch product details
-      const response = await $api(`/products/${slug}`)
+try {
+  // Fetch product details
+  const response = await $api(`/products/${slug}`)
 
-      // Check if response has data property
-      if (!response || !response.data) {
-        throw new Error('Product not found or invalid response structure')
-      }
-
-      // Extract product data from response wrapper
-      const productData = response.data
-
-      // Validate product data
-      if (!productData || !productData.id) {
-        throw new Error('Product data is missing required fields')
-      }
-
-      const transformedProduct = {
-        ...productData,
-        id: String(productData.id),
-        merchant: {
-          ...productData.merchant,
-          id: String(productData.merchant.id),
-        },
-        // Use gallery images if available, otherwise fallback to preview_image
-        images:
-          productData.gallery && productData.gallery.length > 0
-            ? productData.gallery.map((img: any) => ({
-                url: img.url,
-                altText: productData.name || 'Product image',
-              }))
-            : productData.preview_image
-              ? [
-                  {
-                    url: productData.preview_image,
-                    altText: productData.name || 'Product image',
-                  },
-                ]
-              : [],
-      }
-
-      // Fetch merchant products (excluding current product)
-      const merchantProductsResponse = await $api(`products?merchant=${productData.merchant.slug}`)
-
-      let filteredProducts: MerchantProduct[] = []
-      if (merchantProductsResponse && merchantProductsResponse.data) {
-        const merchantProductsData = merchantProductsResponse.data
-        filteredProducts = merchantProductsData
-          .filter((p: any) => p.id !== productData.id)
-          .map(transformMerchantProduct)
-          .sort(() => (Math.random() > 0.5 ? 1 : -1))
-      }
-
-      // Fetch merchant shipping data
-      let shippingData = {}
-      try {
-        const shippingResponse = await $api(`/merchants/${productData.merchant.id}/shipping`)
-        shippingData = shippingResponse || {}
-      } catch (shippingError) {
-        shippingData = {}
-      }
-
-      return {
-        product: transformedProduct,
-        merchantProduct: filteredProducts,
-        merchantShippingData: shippingData,
-      }
-    } catch (error: any) {
-      throw createError({
-        statusCode: error?.response?.statusCode ?? 404,
-        statusMessage: error?.response?.data?.message ?? 'Product not found',
-      })
-    }
-  },
-  {
-    default: () => ({
-      product: {} as Product,
-      merchantProduct: [],
-      merchantShippingData: {},
-    }),
+  // Check if response has data property
+  if (!response || !response.data) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Product not found',
+    })
   }
-)
 
-// Set initial data
-if (initialData.value) {
-  product.value = initialData.value.product
-  merchantProduct.value = initialData.value.merchantProduct
-  merchantShippingData.value = initialData.value.merchantShippingData
+  // Extract product data from response wrapper
+  const productData = response.data
+
+  // Validate product data
+  if (!productData || !productData.id) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Product not found',
+    })
+  }
+
+  const transformedProduct = {
+    ...productData,
+    id: String(productData.id),
+    merchant: {
+      ...productData.merchant,
+      id: String(productData.merchant.id),
+    },
+    // Use gallery images if available, otherwise fallback to preview_image
+    images:
+      productData.gallery && productData.gallery.length > 0
+        ? productData.gallery.map((img: any) => ({
+            url: img.url,
+            altText: productData.name || 'Product image',
+          }))
+        : productData.preview_image
+          ? [
+              {
+                url: productData.preview_image,
+                altText: productData.name || 'Product image',
+              },
+            ]
+          : [],
+  }
+
+  // Fetch merchant products (excluding current product)
+  const merchantProductsResponse = await $api(`products?merchant=${productData.merchant.slug}`)
+
+  let filteredProducts: MerchantProduct[] = []
+  if (merchantProductsResponse && merchantProductsResponse.data) {
+    const merchantProductsData = merchantProductsResponse.data
+    filteredProducts = merchantProductsData
+      .filter((p: any) => p.id !== productData.id)
+      .map(transformMerchantProduct)
+      .sort(() => (Math.random() > 0.5 ? 1 : -1))
+  }
+
+  // Fetch merchant shipping data
+  let shippingData = {}
+  try {
+    const shippingResponse = await $api(`/merchants/${productData.merchant.id}/shipping`)
+    shippingData = shippingResponse || {}
+  } catch (shippingError) {
+    shippingData = {}
+  }
+
+  // Set the data directly
+  product.value = transformedProduct
+  merchantProduct.value = filteredProducts
+  merchantShippingData.value = shippingData
+} catch (error: any) {
+  // If it's already a createError, re-throw it
+  if (error.statusCode) {
+    throw error
+  }
+  // Otherwise, create a new error
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Product not found',
+  })
 }
 
 // Watch for route changes and update data
 watch(
   () => route.params.slug,
-  newSlug => {
-    if (newSlug && initialData.value) {
-      product.value = initialData.value.product
-      merchantProduct.value = initialData.value.merchantProduct
-      merchantShippingData.value = initialData.value.merchantShippingData
+  async (newSlug) => {
+    if (newSlug) {
+      // Re-fetch data when route changes
+      try {
+        const response = await $api(`/products/${newSlug}`)
+        if (response && response.data && response.data.id) {
+          const productData = response.data
+          const transformedProduct = {
+            ...productData,
+            id: String(productData.id),
+            merchant: {
+              ...productData.merchant,
+              id: String(productData.merchant.id),
+            },
+            images:
+              productData.gallery && productData.gallery.length > 0
+                ? productData.gallery.map((img: any) => ({
+                    url: img.url,
+                    altText: productData.name || 'Product image',
+                  }))
+                : productData.preview_image
+                  ? [
+                      {
+                        url: productData.preview_image,
+                        altText: productData.name || 'Product image',
+                      },
+                    ]
+                  : [],
+          }
+          product.value = transformedProduct
+        }
+      } catch (error) {
+        // Handle route change errors
+        throw createError({
+          statusCode: 404,
+          statusMessage: 'Product not found',
+        })
+      }
     }
   },
-  { immediate: true }
+  { immediate: false }
 )
 
 // Get runtime config outside of useHead
@@ -186,7 +210,7 @@ const config = useRuntimeConfig()
 
 // SEO head configuration
 useHead(() => {
-  if (!product.value) return {}
+  if (!product.value || !product.value.name || !product.value.merchant) return {}
 
   const baseUrl = config.public.browserUrlDomain || 'http://localhost:3000'
 
@@ -248,7 +272,7 @@ useHead(() => {
 </script>
 
 <template>
-  <div>
+  <div v-if="product && product.name">
     <TemplatesKlumpProductDetails
       :product="product"
       :merchant-product="merchantProduct"

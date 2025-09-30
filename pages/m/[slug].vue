@@ -133,46 +133,32 @@ watch(
   { immediate: true }
 )
 
-// Initial data fetch using useAsyncData
-const { data: initialData } = await useAsyncData(
-  'merchant-products',
-  async () => {
-    const slug = route.params.slug as string
+// Initial data fetch using $fetch directly
+const slug = route.params.slug as string
 
-    try {
-      const data = await $api(`products?merchant=${slug}&limit=12&offset=0`)
+try {
+  const data = await $api(`products?merchant=${slug}&limit=12&offset=0`)
 
-      return {
-        products: data.data.map(transformProduct),
-        merchant: data?.group?.merchant || data?.data[0]?.merchant || { id: '', business_name: '', slug: '' },
-        pageOptions: {
-          limit: data.limit,
-          offset: data.offset,
-          total: data.total,
-        },
-      }
-    } catch (error: any) {
-      throw createError({
-        statusCode: error?.response?.statusCode ?? 404,
-        statusMessage: error?.response?.data?.message ?? 'Merchant not found',
-      })
-    }
-  },
-  {
-    default: () => ({
-      products: [],
-      merchant: { id: '', business_name: '', slug: '', state: '' },
-      pageOptions: { limit: 12, offset: 0, total: 0 },
-    }),
+  // Set the data directly
+  products.value = data.data.map(transformProduct)
+  merchant.value = data?.group?.merchant || data?.data[0]?.merchant || { id: '', business_name: '', slug: '' }
+  pageOptions.value = {
+    limit: data.limit,
+    offset: data.offset,
+    total: data.total,
   }
-)
-
-// Set initial data
-if (initialData.value) {
-  products.value = initialData.value.products
-  merchant.value = initialData.value.merchant
-  pageOptions.value = initialData.value.pageOptions
+} catch (error: any) {
+  // If it's already a createError, re-throw it
+  if (error.statusCode) {
+    throw error
+  }
+  // Otherwise, create a new error
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Merchant not found',
+  })
 }
+
 
 // Get runtime config outside of useHead
 const config = useRuntimeConfig()
@@ -241,7 +227,7 @@ useHead(() => {
 </script>
 
 <template>
-  <div>
+  <div v-if="merchant && merchant.business_name">
     <TemplatesKlumpMerchantProductListings
       :products="products"
       heading="Items"

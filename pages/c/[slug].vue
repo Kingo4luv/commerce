@@ -131,49 +131,33 @@ watch(
   { immediate: true }
 )
 
-// Initial data fetch using useAsyncData
-const { data: initialData } = await useAsyncData(
-  'category-products',
-  async () => {
-    const slug = route.params.slug as string
+// Initial data fetch using $fetch directly
+const slug = route.params.slug as string
 
-    try {
-      const data = await $api(`products?category=${slug}&limit=12&offset=0`)
+try {
+  const data = await $api(`products?category=${slug}&limit=12&offset=0`)
 
-      return {
-        products: data.data.map(transformProduct),
-        category: data.group.category,
-        heading: data.group.category.name,
-        pageOptions: {
-          limit: data.limit,
-          offset: data.offset,
-          total: data.total,
-        },
-      }
-    } catch (error: any) {
-      throw createError({
-        statusCode: error?.response?.statusCode ?? 404,
-        statusMessage: error?.response?.data?.message ?? 'Category not found',
-      })
-    }
-  },
-  {
-    default: () => ({
-      products: [],
-      category: { name: '', slug: '' },
-      heading: '',
-      pageOptions: { limit: 12, offset: 0, total: 0 },
-    }),
+  // Set the data directly
+  products.value = data.data.map(transformProduct)
+  category.value = data.group.category
+  heading.value = data.group.category.name
+  pageOptions.value = {
+    limit: data.limit,
+    offset: data.offset,
+    total: data.total,
   }
-)
-
-// Set initial data
-if (initialData.value) {
-  products.value = initialData.value.products
-  category.value = initialData.value.category
-  heading.value = initialData.value.heading
-  pageOptions.value = initialData.value.pageOptions
+} catch (error: any) {
+  // If it's already a createError, re-throw it
+  if (error.statusCode) {
+    throw error
+  }
+  // Otherwise, create a new error
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Category not found',
+  })
 }
+
 
 // Get runtime config outside of useHead
 const config = useRuntimeConfig()
@@ -242,7 +226,7 @@ useHead(() => {
 </script>
 
 <template>
-  <div>
+  <div v-if="heading">
     <TemplatesKlumpCategory
       :heading="heading"
       :products="products"
