@@ -42,6 +42,7 @@ const checkoutStore = useCheckoutStore()
 
 // Ensure categories are loaded during SSR for consistent navigation
 await siteStore.fetchCategories()
+await siteStore.fetchStates()
 
 const navLinks = computed(() =>
   siteStore.getCategories.map((cat: any) => ({

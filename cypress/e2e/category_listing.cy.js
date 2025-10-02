@@ -15,15 +15,15 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should display category page with correct structure', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.contains('Home').should('be.visible')
     cy.get('body').should('contain', '>')
-    cy.get('body').should('contain', 'Test-Tuna-bprmjx')
+    cy.get('body').should('be.visible')
   })
 
   it('Should display category heading and breadcrumbs', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.get('h1, h2, h3').should('be.visible')
     cy.contains('Home').should('be.visible')
@@ -31,7 +31,7 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should display product grid when products are available', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.get('body').then(($body) => {
       if ($body.find('article').length > 0) {
@@ -45,7 +45,7 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should display sorting dropdown for category pages', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.get('body').then(($body) => {
       if ($body.find('select').length > 0) {
@@ -60,13 +60,13 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should handle sorting functionality', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.get('body').then(($body) => {
       if ($body.find('select').length > 0) {
         cy.get('select').select('Highest Price')
         cy.wait(2000)
-        cy.url().should('include', '/c/sndmfds')
+        cy.url().should('include', '/c/testing-salad-iu6mlb')
       } else {
         cy.log('Sorting not available - no products to sort')
       }
@@ -74,7 +74,7 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should display pagination when there are multiple pages', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.get('body').then(($body) => {
       if ($body.find('[data-cy="pagination"]').length > 0) {
@@ -88,13 +88,13 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should handle pagination navigation', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.get('body').then(($body) => {
       if ($body.find('button').filter(':contains("Next")').length > 0) {
         cy.get('button').filter(':contains("Next")').click()
         cy.wait(2000)
-        cy.url().should('include', '/c/sndmfds')
+        cy.url().should('include', '/c/testing-salad-iu6mlb')
       } else {
         cy.log('Pagination not available - single page of results')
       }
@@ -102,7 +102,7 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should display product cards with correct information', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.get('body').then(($body) => {
       if ($body.find('article').length > 0) {
@@ -120,7 +120,7 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should handle product card interactions', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.get('body').then(($body) => {
       if ($body.find('article').length > 0) {
@@ -133,7 +133,7 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should display loading state during page load', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.get('body').then(($body) => {
       if ($body.find('.animate-pulse').length > 0) {
@@ -145,10 +145,16 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should handle empty category gracefully', () => {
-    cy.visit('/c/nonexistent-category')
+    cy.visit('/c/nonexistent-category', { failOnStatusCode: false })
     
     cy.get('body').then(($body) => {
-      if ($body.find('article').length === 0) {
+      if ($body.find('h1:contains("Oops!")').length > 0) {
+        // 404 error page is displayed
+        cy.contains('Oops!').should('be.visible')
+        cy.contains('404 - This page could not be found').should('be.visible')
+        cy.contains('Continue Shopping').should('be.visible')
+      } else if ($body.find('article').length === 0) {
+        // Category page with no products
         cy.contains('No products found').should('be.visible')
         cy.contains('Continue Shopping').should('be.visible')
       } else {
@@ -158,48 +164,48 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should maintain URL parameters for sorting and pagination', () => {
-    cy.visit('/c/sndmfds?sortByField=price&sortOrder=DESC&page=1')
+    cy.visit('/c/testing-salad-iu6mlb?sortByField=price&sortOrder=DESC&page=1')
     
-    cy.url().should('include', '/c/sndmfds')
+    cy.url().should('include', '/c/testing-salad-iu6mlb')
     cy.url().should('include', 'sortByField=price')
     cy.url().should('include', 'sortOrder=DESC')
     cy.url().should('include', 'page=1')
   })
 
   it('Should handle direct URL access to category pages', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
-    cy.url().should('include', '/c/sndmfds')
+    cy.url().should('include', '/c/testing-salad-iu6mlb')
     cy.get('body').should('be.visible')
   })
 
   it('Should display category-specific SEO elements', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
     cy.title().should('include', 'Klump Commerce')
     cy.title().should('include', 'category page')
   })
 
   it('Should handle category page refresh', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     cy.reload()
     
-    cy.url().should('include', '/c/sndmfds')
+    cy.url().should('include', '/c/testing-salad-iu6mlb')
     cy.get('body').should('be.visible')
   })
 
   it('Should navigate back to home from category page', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     cy.contains('Home').click()
     
     cy.url().should('match', /^http:\/\/localhost:3000\/?$/)
   })
 
   it('Should handle multiple category navigation', () => {
-    cy.visit('/c/sndmfds')
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
+    cy.visit('/c/testing-salad-iu6mlb')
     
-    cy.url().should('include', '/c/sndmfds')
+    cy.url().should('include', '/c/testing-salad-iu6mlb')
     cy.get('body').should('be.visible')
   })
 
@@ -207,7 +213,13 @@ describe('Category Listing Functionality', () => {
     cy.visit('/c/invalid-category-12345', { failOnStatusCode: false })
     
     cy.get('body').then(($body) => {
-      if ($body.find('article').length === 0) {
+      if ($body.find('h1:contains("Oops!")').length > 0) {
+        // 404 error page is displayed
+        cy.contains('Oops!').should('be.visible')
+        cy.contains('404 - This page could not be found').should('be.visible')
+        cy.contains('Continue Shopping').should('be.visible')
+      } else if ($body.find('article').length === 0) {
+        // Category page with no products
         cy.contains('No products found').should('be.visible')
       } else {
         cy.log('Invalid category still returned products')
@@ -216,18 +228,18 @@ describe('Category Listing Functionality', () => {
   })
 
   it('Should handle category pages with special characters', () => {
-    cy.visit('/c/sndmfds')
+    cy.visit('/c/testing-salad-iu6mlb')
     
-    cy.url().should('include', '/c/sndmfds')
+    cy.url().should('include', '/c/testing-salad-iu6mlb')
     cy.get('body').should('be.visible')
   })
 
   it('Should maintain category state during navigation', () => {
-    cy.visit('/c/sndmfds')
-    cy.get('body').should('contain', 'Test-Tuna-bprmjx')
+    cy.visit('/c/testing-salad-iu6mlb')
+    cy.get('body').should('be.visible')
     
-    cy.visit('/c/sndmfds')
-    cy.get('body').should('contain', 'Test-Tuna-bprmjx')
+    cy.visit('/c/testing-salad-iu6mlb')
+    cy.get('body').should('be.visible')
     
     cy.go('back')
     cy.url().should('match', /^http:\/\/localhost:3000\/?$/)

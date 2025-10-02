@@ -185,9 +185,19 @@ describe('Merchant Listing Page Tests', () => {
   })
 
   it('Should display proper error handling for invalid merchants', () => {
-    cy.visit('/m/invalid-merchant-12345')
+    cy.visit('/m/invalid-merchant-12345', { failOnStatusCode: false })
     
-    cy.get('body').should('be.visible')
+    cy.get('body').then(($body) => {
+      if ($body.find('h1:contains("Oops!")').length > 0) {
+        // 404 error page is displayed
+        cy.contains('Oops!').should('be.visible')
+        cy.contains('404 - This page could not be found').should('be.visible')
+        cy.contains('Continue Shopping').should('be.visible')
+      } else {
+        // Merchant page is displayed (valid merchant)
+        cy.get('body').should('be.visible')
+      }
+    })
   })
 
   it('Should handle merchant pages with special characters', () => {
